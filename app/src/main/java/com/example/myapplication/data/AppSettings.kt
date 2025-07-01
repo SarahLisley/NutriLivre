@@ -1,5 +1,4 @@
-// C:/Users/Sarah Lisley/AndroidStudioProjects/MyApplication3/app/src/main/java/com/example/myapplication/data/AppSettings.kt
-package com.example.myapplication.data // Ou o pacote que você preferir
+package com.example.myapplication.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore

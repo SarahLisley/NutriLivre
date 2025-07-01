@@ -1,10 +1,10 @@
-package com.example.myapplication.ui.settings
+package com.example.myapplication.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.UserPreferencesRepository
-import com.example.myapplication.domain.model.AppSettings
+import com.example.myapplication.model.AppSettings
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 

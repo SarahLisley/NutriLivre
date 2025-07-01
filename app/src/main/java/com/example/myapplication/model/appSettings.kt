@@ -1,4 +1,4 @@
-package com.example.myapplication.domain.model
+package com.example.myapplication.model
 
 data class AppSettings(
     val darkModeEnabled: Boolean = false,

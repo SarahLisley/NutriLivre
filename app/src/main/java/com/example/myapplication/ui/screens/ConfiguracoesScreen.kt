@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/myapplication/ui/screens/SettingsScreen.kt
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.myapplication.ui.screens
