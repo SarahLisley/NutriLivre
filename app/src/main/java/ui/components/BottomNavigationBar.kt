@@ -1,86 +1,88 @@
 // app/src/main/java/com/example/myapplication/ui/components/BottomNavigationBar.kt
 package com.example.myapplication.ui.components
 
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.navigation.AppScreens
-import com.google.rpc.Help
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.ui.graphics.vector.ImageVector
-
-
-
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        BottomNavButton(
-            icon    = Icons.Default.Home,
-            label   = "Receitas",
-            onClick = { navController.navigate(AppScreens.TelaInicialScreen.route) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    NavigationBar {
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Home, contentDescription = "Receitas") },
+            label = { Text("Receitas") },
+            selected = currentRoute == AppScreens.TelaInicialScreen.route,
+            onClick = { 
+                if (currentRoute != AppScreens.TelaInicialScreen.route) {
+                    navController.navigate(AppScreens.TelaInicialScreen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
         )
 
-        BottomNavButton(
-            icon    = Icons.Default.Search,
-            label   = "Buscar",
-            onClick = { navController.navigate(AppScreens.BuscaScreen.route) }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+            label = { Text("Buscar") },
+            selected = currentRoute == AppScreens.BuscaScreen.route,
+            onClick = { 
+                if (currentRoute != AppScreens.BuscaScreen.route) {
+                    navController.navigate(AppScreens.BuscaScreen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
         )
 
-        BottomNavButton(
-            icon    = Icons.Default.Favorite,
-            label   = "Favoritos",
-            onClick = { navController.navigate(AppScreens.FavoritosScreen.route) }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Favorite, contentDescription = "Favoritos") },
+            label = { Text("Favoritos") },
+            selected = currentRoute == AppScreens.FavoritosScreen.route,
+            onClick = { 
+                if (currentRoute != AppScreens.FavoritosScreen.route) {
+                    navController.navigate(AppScreens.FavoritosScreen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
         )
 
-        BottomNavButton(
-            icon    = Icons.Default.Settings,
-            label   = "Configurações",
-            onClick = { navController.navigate(AppScreens.ConfiguracoesScreen.route) }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Configurações") },
+            label = { Text("Configurações") },
+            selected = currentRoute == AppScreens.ConfiguracoesScreen.route,
+            onClick = { 
+                if (currentRoute != AppScreens.ConfiguracoesScreen.route) {
+                    navController.navigate(AppScreens.ConfiguracoesScreen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
         )
-
-
-    }
-}
-
-@Composable
-private fun BottomNavButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        colors  = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        modifier = Modifier
-            .height(40.dp)
-            .widthIn(min = 64.dp)
-    ) {
-        Icon(icon, contentDescription = label)
-        Spacer(Modifier.width(4.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall)
     }
 }

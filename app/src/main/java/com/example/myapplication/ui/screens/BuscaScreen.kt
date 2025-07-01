@@ -93,5 +93,3 @@ fun BuscaScreen(navController: NavHostController) {
         }
     }
 }
-
-private fun AppScreens.DetalheScreen.createRoute(i: Int) {}

@@ -28,7 +28,6 @@ import com.example.myapplication.navigation.AppScreens
 import com.example.myapplication.model.DadosMockados
 import com.example.myapplication.model.Receita
 import com.example.myapplication.ui.components.BottomNavigationBar
-import com.google.accompanist.swiperefresh.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -40,8 +39,6 @@ fun TelaInicial(navController: NavHostController) {
     var expandedMenu by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Estado do SwipeRefresh
-    val swipeState = rememberSwipeRefreshState(isRefreshing)
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -86,42 +83,37 @@ fun TelaInicial(navController: NavHostController) {
         }
     ) { paddingValues ->
 
-        SwipeRefresh(
-            state = swipeState,
-            onRefresh = {
-                scope.launch {
-                    isRefreshing = true
-                    delay(1000) // simula fetch
-                    receitas.shuffle()
-                    isRefreshing = false
-                }
-            },
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-        ) {
-            if (isRefreshing && receitas.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(items = receitas, key = { it.id }) { receita ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(tween(300)) + slideInVertically(
-                                animationSpec = tween(300)
-                            ) { it / 2 }
-                        ) {
-                            ReceitaCard(receita) {
-                                navController.navigate(
-                                    AppScreens.DetalheScreen.createRoute(receita.id)
-                                )
+                .pullRefresh(
+                    state = rememberPullRefreshState(
+                        refreshing = isRefreshing,
+                        onRefresh = {
+                            scope.launch {
+                                isRefreshing = true
+                                delay(1000) // simula fetch
+                                receitas.shuffle()
+                                isRefreshing = false
                             }
                         }
+                    )
+                ),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = receitas, key = { it.id }) { receita ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(tween(300)) + slideInVertically(
+                        animationSpec = tween(300)
+                    ) { it / 2 }
+                ) {
+                    ReceitaCard(receita) {
+                        navController.navigate(
+                            AppScreens.DetalheScreen.createRoute(receita.id)
+                        )
                     }
                 }
             }

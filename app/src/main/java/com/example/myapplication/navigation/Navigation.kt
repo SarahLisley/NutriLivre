@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.screens.*
 import androidx.compose.material3.Text // <- Importa o Text correto do Material3
+import com.example.myapplication.ui.screens.ConfiguracoesScreen
 
 // Rotas nomeadas
 sealed class AppScreens(val route: String) {
@@ -37,7 +38,7 @@ fun AppNavigation() {
             FavoritosScreen(navController)
         }
         composable(AppScreens.ConfiguracoesScreen.route) {
-            ConfiguracoesScreen(navController)
+            ConfiguracoesScreen(onBack = { navController.popBackStack() })
         }
         composable(AppScreens.AjudaScreen.route) {
             AjudaScreen(navController)

@@ -1,76 +1,104 @@
+// app/src/main/java/com/example/myapplication/ui/screens/SettingsScreen.kt
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.myapplication.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.example.myapplication.model.DadosMockados
-import com.example.myapplication.ui.components.BottomNavigationBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.data.UserPreferencesRepository
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfiguracoesScreen(navController: NavHostController) {
-    var modoEscuroAtivado by remember { mutableStateOf(false) }
-    var notificacoesAtivadas by remember { mutableStateOf(true) }
+fun ConfiguracoesScreen(
+    onBack: () -> Unit
+) {
+    // Cria o ViewModel com sua factory
+    val context = LocalContext.current
+    val viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(
+            UserPreferencesRepository(context)
+        )
+    )
+
+    // Coleta os estados do DataStore
+    val darkMode by viewModel.isDarkModeEnabled.collectAsState()
+    val notifications by viewModel.areNotificationsEnabled.collectAsState()
+    val animations by viewModel.areAnimationsEnabled.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Configurações") },
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "Menu")
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
                     }
                 }
             )
-        },
-        bottomBar = { BottomNavigationBar(navController = navController) }
-    ) { paddingValues ->
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Modo Escuro", style = MaterialTheme.typography.bodyLarge)
-                Switch(
-                    checked = modoEscuroAtivado,
-                    onCheckedChange = { modoEscuroAtivado = it }
-                )
-            }
-
+            PreferenceRow(
+                title = "Modo Escuro",
+                isChecked = darkMode,
+                onCheckedChange = viewModel::toggleDarkMode
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Notificações", style = MaterialTheme.typography.bodyLarge)
-                Switch(
-                    checked = notificacoesAtivadas,
-                    onCheckedChange = { notificacoesAtivadas = it }
-                )
-            }
+            PreferenceRow(
+                title = "Notificações",
+                isChecked = notifications,
+                onCheckedChange = viewModel::toggleNotificationsEnabled
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = { DadosMockados.listaDeFavoritosMock.clear() },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Limpar Favoritos")
-            }
+            PreferenceRow(
+                title = "Animações",
+                isChecked = animations,
+                onCheckedChange = viewModel::toggleAnimationsEnabled
+            )
         }
+    }
+}
+
+@Composable
+fun PreferenceRow(
+    title: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Switch(checked = isChecked, onCheckedChange = onCheckedChange)
     }
 }

@@ -7,6 +7,7 @@
     <!-- Permissões -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +18,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
-        tools:targetApi="35">
+        tools:targetApi="34">
 
         <!-- Receiver deve ficar AQUI -->
         <receiver android:name=".notifications.ReminderReceiver"

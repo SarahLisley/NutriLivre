@@ -1,17 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.example.myapplication"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.myapplication"
-        minSdk = 35
-        targetSdk = 35
+        minSdk = 24
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -40,11 +39,7 @@ android {
 }
 
 dependencies {
-    // Accompanist para Pull-to-Refresh
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
-// Accompanist para Placeholder
-    implementation("com.google.accompanist:accompanist-placeholder-material:0.30.1")
-// Coil para carregamento de imagem
+    // Coil para carregamento de imagem
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation(libs.androidx.core.ktx)
@@ -64,5 +59,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.navigation:navigation-compose:2.7.5") // ou a versão mais recente
-    implementation("io.coil-kt:coil-compose:2.4.0")
 }
