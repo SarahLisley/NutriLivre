@@ -1,11 +1,10 @@
 package com.example.myapplication.ui.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,21 +20,28 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullRefreshIndicator
-import androidx.compose.material3.pulltorefresh.rememberPullRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,44 +51,36 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication.R
-import com.example.myapplication.navigation.AppScreens
 import com.example.myapplication.model.DadosMockados
 import com.example.myapplication.model.Receita
+import com.example.myapplication.navigation.AppScreens
 import com.example.myapplication.ui.components.BottomNavigationBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.ui.screens.ReceitasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
-fun TelaInicial(navController: NavHostController) {
-    // Dados mockados
-    val receitas = remember { mutableStateListOf(*DadosMockados.listaDeReceitas.toTypedArray()) }
+fun TelaInicial(navController: NavHostController, receitasViewModel: ReceitasViewModel = viewModel()) {
+    val receitas = receitasViewModel.receitas
     var expandedMenu by remember { mutableStateOf(false) }
-    var isRefreshing by remember { mutableStateOf(false) }
-
-    val scope = rememberCoroutineScope()
-    
-    val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = {
-            scope.launch {
-                isRefreshing = true
-                delay(1000) // simula fetch
-                receitas.shuffle()
-                isRefreshing = false
-            }
-        }
-    )
-
+    var showDialog by remember { mutableStateOf(false) }
+    var novoItem by remember { mutableStateOf("") }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var itemEditando by remember { mutableStateOf<Receita?>(null) }
+    var novoNome by remember { mutableStateOf("") }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -116,52 +114,124 @@ fun TelaInicial(navController: NavHostController) {
                                 expandedMenu = false
                             }
                         )
+                        DropdownMenuItem(
+                            text = { Text("Lista de Compras") },
+                            onClick = {
+                                navController.navigate(AppScreens.ShoppingListScreen.route)
+                                expandedMenu = false
+                            }
+                        )
                     }
                 }
             )
         },
         bottomBar = {
             BottomNavigationBar(navController)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showDialog = true }) {
+                Icon(Icons.Filled.Add, contentDescription = "Adicionar novo item")
+            }
         }
     ) { paddingValues ->
-
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Adicionar novo item") },
+                text = {
+                    OutlinedTextField(
+                        value = novoItem,
+                        onValueChange = { novoItem = it },
+                        label = { Text("Nome do item") }
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if (novoItem.isNotBlank()) {
+                            receitasViewModel.adicionarReceita(novoItem)
+                            novoItem = ""
+                            showDialog = false
+                        }
+                    }) {
+                        Text("Adicionar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+        if (showEditDialog && itemEditando != null) {
+            AlertDialog(
+                onDismissRequest = { showEditDialog = false },
+                title = { Text("Editar item") },
+                text = {
+                    OutlinedTextField(
+                        value = novoNome,
+                        onValueChange = { novoNome = it },
+                        label = { Text("Novo nome") }
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if (novoNome.isNotBlank() && itemEditando != null) {
+                            receitasViewModel.editarNome(itemEditando!!.id, novoNome)
+                            showEditDialog = false
+                        }
+                    }) {
+                        Text("Salvar")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showEditDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
         Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .pullRefresh(pullRefreshState)
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-            items(items = receitas, key = { it.id }) { receita ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(tween(300)) + slideInVertically(
-                        animationSpec = tween(300)
-                    ) { it / 2 }
-                ) {
-                    ReceitaCard(receita) {
-                        navController.navigate(
-                            AppScreens.DetalheScreen.createRoute(receita.id)
+            ) {
+                items(items = receitas, key = { it.id }) { receita ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn(tween(300)) + slideInVertically(animationSpec = tween(300)) { it / 2 }
+                    ) {
+                        ReceitaCard(
+                            receita = receita,
+                            onClick = {
+                                navController.navigate(AppScreens.DetalheScreen.createRoute(receita.id))
+                            },
+                            onFavoritoClick = { receitasViewModel.toggleFavorito(receita.id) },
+                            onEditarClick = {
+                                itemEditando = receita
+                                novoNome = receita.nome
+                                showEditDialog = true
+                            }
                         )
                     }
                 }
             }
         }
-        
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
 }
 
 @Composable
-private fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
+fun ReceitaCard(
+    receita: Receita,
+    onClick: () -> Unit,
+    onFavoritoClick: () -> Unit,
+    onEditarClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,12 +241,9 @@ private fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
     ) {
         Column {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(receita.imagemUrl)
-                    .crossfade(true)
-                    .build(),
+                model = receita.imagemUrl,
                 contentDescription = receita.nome,
-                placeholder = painterResource(R.drawable.placeholder_shimmer),
+                placeholder = painterResource(com.example.myapplication.R.drawable.placeholder_shimmer),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,11 +251,28 @@ private fun ReceitaCard(receita: Receita, onClick: () -> Unit) {
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             )
             Spacer(Modifier.height(8.dp))
-            Text(
-                text = receita.nome,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 12.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = receita.nome,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                Row {
+                    IconButton(onClick = onFavoritoClick) {
+                        Icon(
+                            imageVector = if (receita.isFavorita) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = if (receita.isFavorita) "Desfavoritar" else "Favoritar"
+                        )
+                    }
+                    IconButton(onClick = onEditarClick) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Editar item")
+                    }
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 text = receita.descricaoCurta,

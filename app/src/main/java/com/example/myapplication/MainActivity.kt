@@ -42,7 +42,14 @@ class MainActivity : ComponentActivity() {
             val darkModeEnabled by repo.isDarkModeEnabled
                 .collectAsState(initial = isSystemInDarkTheme())
 
-            NutriLivreTheme(darkTheme = darkModeEnabled) {
+            val primaryColor by repo.primaryColor.collectAsState(initial = "#6750A4")
+            val secondaryColor by repo.secondaryColor.collectAsState(initial = "#625B71")
+
+            NutriLivreTheme(
+                darkTheme = darkModeEnabled,
+                primaryColorHex = primaryColor,
+                secondaryColorHex = secondaryColor
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

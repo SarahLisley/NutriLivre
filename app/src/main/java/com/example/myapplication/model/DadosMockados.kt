@@ -88,7 +88,7 @@ object DadosMockados {
             id = 4,
             nome = "Panqueca Vegana de Banana",
             descricaoCurta = "Panqueca saudável sem glúten, leite ou ovos.",
-            imagemUrl = "https://naminhapanela.com/wp-content/uploads/2020/03/panqueca-de-banana-vegana-2-1900x1267.jpg",
+            imagemUrl = "https://www.google.com/url?sa=i&url=https%3A%2F%2Fnewmillen.com.br%2Fpanqueca-de-banana-vegana%2F&psig=AOvVaw0Pg8FfpufBg11bVI47z2nJ&ust=1751490007723000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIjk6u_GnI4DFQAAAAAdAAAAABAE",
             ingredientes = listOf(
                 "1 banana madura amassada",
                 "3 colheres de sopa de farinha de arroz",

@@ -56,5 +56,25 @@ class UserPreferencesRepository(private val context: Context) {
         }
     }
 
-    // Adicione getters e setters para PRIMARY_COLOR e SECONDARY_COLOR conforme necessário
+    val primaryColor: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.PRIMARY_COLOR]
+        }
+
+    suspend fun setPrimaryColor(color: String) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.PRIMARY_COLOR] = color
+        }
+    }
+
+    val secondaryColor: Flow<String?> = context.dataStore.data
+        .map { preferences ->
+            preferences[UserPreferencesKeys.SECONDARY_COLOR]
+        }
+
+    suspend fun setSecondaryColor(color: String) {
+        context.dataStore.edit { settings ->
+            settings[UserPreferencesKeys.SECONDARY_COLOR] = color
+        }
+    }
 }

@@ -15,6 +15,7 @@ sealed class AppScreens(val route: String) {
     object ConfiguracoesScreen : AppScreens("configuracoes")
     object AjudaScreen : AppScreens("ajuda")
     object BuscaScreen : AppScreens("busca")
+    object ShoppingListScreen : AppScreens("shopping_list")
 
     object DetalheScreen : AppScreens("detalhe_receita/{receitaId}") {
         fun createRoute(receitaId: Int): String {
@@ -45,6 +46,9 @@ fun AppNavigation() {
         }
         composable(AppScreens.BuscaScreen.route) {
             BuscaScreen(navController)
+        }
+        composable(AppScreens.ShoppingListScreen.route) {
+            ShoppingListScreen()
         }
         composable(AppScreens.DetalheScreen.route) { backStackEntry ->
             val receitaId = backStackEntry.arguments?.getString("receitaId")?.toIntOrNull()

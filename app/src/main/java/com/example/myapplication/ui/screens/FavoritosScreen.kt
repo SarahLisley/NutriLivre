@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,19 +18,28 @@ import coil.compose.AsyncImage
 import com.example.myapplication.model.DadosMockados
 import com.example.myapplication.navigation.AppScreens
 import com.example.myapplication.ui.components.BottomNavigationBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.ui.screens.ReceitasViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritosScreen(navController: NavHostController) {
-    val favoritos = DadosMockados.listaDeFavoritosMock
-
+fun FavoritosScreen(navController: NavHostController, receitasViewModel: ReceitasViewModel = viewModel()) {
+    val favoritos = receitasViewModel.getFavoritos()
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Favoritos") }, actions = {
-                IconButton(onClick = { }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "Menu")
+            TopAppBar(
+                title = { Text("Favoritos") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { }) {
+                        Icon(Icons.Filled.MoreVert, contentDescription = "Menu")
+                    }
                 }
-            })
+            )
         },
         bottomBar = { BottomNavigationBar(navController = navController) }
     ) { paddingValues ->

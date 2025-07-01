@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -12,20 +13,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.myapplication.model.DadosMockados
 import com.example.myapplication.ui.components.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetalheScreen(navController: NavHostController, receitaId: Int?) {
+fun DetalheScreen(navController: NavHostController, receitaId: Int?, receitasViewModel: ReceitasViewModel = viewModel()) {
     val receita = remember { DadosMockados.listaDeReceitas.find { it.id == receitaId } }
     var isFavorite by remember { mutableStateOf(receita?.isFavorita ?: false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(receita?.nome ?: "Detalhe") },
+                title = { Text("Detalhes") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
+                    }
+                },
                 actions = {
                     IconButton(onClick = { }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = "Menu")

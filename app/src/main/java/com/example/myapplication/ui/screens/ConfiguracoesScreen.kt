@@ -22,10 +22,30 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.UserPreferencesRepository
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Notifications
+import java.util.Calendar
+import android.app.TimePickerDialog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.myapplication.model.Receita
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.setValue
+import com.example.myapplication.ui.screens.ReceitasViewModel
+import com.example.myapplication.notifications.NotificationHelper
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 
 @Composable
 fun ConfiguracoesScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    receitasViewModel: ReceitasViewModel = viewModel()
 ) {
     // Cria o ViewModel com sua factory
     val context = LocalContext.current
@@ -39,6 +59,14 @@ fun ConfiguracoesScreen(
     val darkMode by viewModel.isDarkModeEnabled.collectAsState()
     val notifications by viewModel.areNotificationsEnabled.collectAsState()
     val animations by viewModel.areAnimationsEnabled.collectAsState()
+    val primaryColor by viewModel.primaryColor.collectAsState()
+    val secondaryColor by viewModel.secondaryColor.collectAsState()
+    var primaryColorInput by remember { mutableStateOf(TextFieldValue(primaryColor ?: "#6200EE")) }
+    var secondaryColorInput by remember { mutableStateOf(TextFieldValue(secondaryColor ?: "#03DAC5")) }
+
+    var showReceitaDialog by remember { mutableStateOf(false) }
+    var receitaSelecionada by remember { mutableStateOf<Receita?>(null) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -46,10 +74,7 @@ fun ConfiguracoesScreen(
                 title = { Text("Configurações") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Voltar"
-                        )
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
                     }
                 }
             )
@@ -80,6 +105,92 @@ fun ConfiguracoesScreen(
                 isChecked = animations,
                 onCheckedChange = viewModel::toggleAnimationsEnabled
             )
+
+            Spacer(modifier = Modifier.height(32.dp))
+            Text("Personalizar Cores", style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(
+                value = primaryColorInput,
+                onValueChange = {
+                    primaryColorInput = it
+                    viewModel.setPrimaryColor(it.text)
+                },
+                label = { Text("Cor Primária (hex)") },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            )
+            OutlinedTextField(
+                value = secondaryColorInput,
+                onValueChange = {
+                    secondaryColorInput = it
+                    viewModel.setSecondaryColor(it.text)
+                },
+                label = { Text("Cor Secundária (hex)") },
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            )
+            Button(onClick = { showReceitaDialog = true }, modifier = Modifier.padding(top = 8.dp)) {
+                Icon(Icons.Filled.Notifications, contentDescription = "Agendar lembrete")
+                Spacer(Modifier.width(8.dp))
+                Text("Escolher Receita e Horário")
+            }
+            if (showReceitaDialog) {
+                AlertDialog(
+                    onDismissRequest = { showReceitaDialog = false },
+                    title = { Text("Selecione uma receita") },
+                    text = {
+                        LazyColumn(modifier = Modifier.height(200.dp)) {
+                            items(receitasViewModel.receitas) { receita ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            receitaSelecionada = receita
+                                            showReceitaDialog = false
+                                            showTimePicker = true
+                                        }
+                                        .padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(com.example.myapplication.R.drawable.placeholder_shimmer),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(40.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(receita.nome)
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {},
+                    dismissButton = {
+                        Button(onClick = { showReceitaDialog = false }) { Text("Cancelar") }
+                    }
+                )
+            }
+            if (showTimePicker && receitaSelecionada != null) {
+                val now = Calendar.getInstance()
+                TimePickerDialog(
+                    context,
+                    { _, hour: Int, minute: Int ->
+                        val calendar = Calendar.getInstance().apply {
+                            set(Calendar.HOUR_OF_DAY, hour)
+                            set(Calendar.MINUTE, minute)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+                        NotificationHelper.scheduleReminder(
+                            context = context,
+                            itemId = receitaSelecionada!!.id,
+                            title = receitaSelecionada!!.nome,
+                            timeInMillis = calendar.timeInMillis
+                        )
+                        showTimePicker = false
+                    },
+                    now.get(Calendar.HOUR_OF_DAY),
+                    now.get(Calendar.MINUTE),
+                    true
+                ).show()
+                showTimePicker = false
+            }
         }
     }
 }

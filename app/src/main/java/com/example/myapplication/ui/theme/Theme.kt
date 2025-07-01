@@ -11,6 +11,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -34,9 +35,10 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun NutriLivreTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // Agora aceita o parâmetro
-    // Dynamic color is available on Android 12+
+    darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    primaryColorHex: String? = null,
+    secondaryColorHex: String? = null,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -44,18 +46,23 @@ fun NutriLivreTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> DarkColorScheme.copy(
+            primary = primaryColorHex?.let { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrElse { DarkColorScheme.primary } } ?: DarkColorScheme.primary,
+            secondary = secondaryColorHex?.let { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrElse { DarkColorScheme.secondary } } ?: DarkColorScheme.secondary
+        )
+        else -> LightColorScheme.copy(
+            primary = primaryColorHex?.let { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrElse { LightColorScheme.primary } } ?: LightColorScheme.primary,
+            secondary = secondaryColorHex?.let { runCatching { Color(android.graphics.Color.parseColor(it)) }.getOrElse { LightColorScheme.secondary } } ?: LightColorScheme.secondary
+        )
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme // Ajuste para o modo escuro/claro
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
-
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
